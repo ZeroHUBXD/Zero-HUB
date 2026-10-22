@@ -1,3 +1,4 @@
+-- NEW
 local char=string.char;
 local byte=string.byte;
 local sub=string.sub;
@@ -1279,6 +1280,62 @@ infoRight:AddButton({["Text"]="ขอให้สนุก",["Func"]=function()
     Library:Notify({["Title"]="ZERO HUB",["Description"]="ขอให้สนุกกับการใช้งานครับ",["Time"]=3})
 end})
 local v142=v126.Movement:AddLeftGroupbox("เทเลพอร์ต")
+
+-- Tool สำหรับแตะ/คลิกตำแหน่งบนพื้นแล้ววาร์ปไปยังจุดนั้น
+-- ใช้ Tool.Activated เพื่อรองรับการแตะบนมือถือและคลิกบน PC
+local function createClickTeleportTool()
+    local backpack = LocalPlayer:FindFirstChildOfClass("Backpack") or LocalPlayer:WaitForChild("Backpack")
+    local character = LocalPlayer.Character
+    for _, container in ipairs({backpack, character}) do
+        if container then
+            local oldTool = container:FindFirstChild("วาร์ปไปจุดที่คลิก")
+            if oldTool and oldTool:IsA("Tool") then
+                oldTool:Destroy()
+            end
+        end
+    end
+
+    local tool = Instance.new("Tool")
+    tool.Name = "วาร์ปไปจุดที่คลิก"
+    tool.ToolTip = "เลือกไอเทมนี้ แล้วแตะ/คลิกจุดที่ต้องการวาร์ปไป"
+    tool.RequiresHandle = false
+    tool.CanBeDropped = false
+
+    local mouse = LocalPlayer:GetMouse()
+    local busy = false
+    tool.Activated:Connect(function()
+        if busy or tool.Parent ~= LocalPlayer.Character then return end
+        busy = true
+        local ok, err = pcall(function()
+            local currentCharacter = LocalPlayer.Character
+            local root = currentCharacter and currentCharacter:FindFirstChild("HumanoidRootPart")
+            local humanoid = currentCharacter and currentCharacter:FindFirstChildOfClass("Humanoid")
+            if not root or not humanoid or humanoid.Health <= 0 then return end
+
+            local hit = mouse.Hit
+            if not hit then return end
+            local destination = hit.Position + Vector3.new(0, 3, 0)
+            currentCharacter:PivotTo(CFrame.new(destination) * (root.CFrame - root.Position))
+        end)
+        if not ok then warn("[Zero HUB] Click Teleport Tool: " .. tostring(err)) end
+        task.wait(0.15)
+        busy = false
+    end)
+
+    tool.Parent = backpack
+end
+
+-- รับไอเทมผ่านปุ่มในหน้าเทเลพอร์ตเท่านั้น
+v142:AddButton({["Text"]="รับไอเทม Tool วาร์ป",["Tooltip"]="กดเพื่อเพิ่มไอเทมวาร์ปไปจุดที่คลิกลงในกระเป๋า",["Func"]=function()
+    local ok, err = pcall(createClickTeleportTool)
+    if ok then
+        Library:Notify({["Title"]="รับไอเทมสำเร็จ",["Description"]="เพิ่มไอเทมวาร์ปลงในกระเป๋าแล้ว",["Time"]=3})
+    else
+        warn("[Zero HUB] รับไอเทมวาร์ปไม่สำเร็จ: " .. tostring(err))
+        Library:Notify({["Title"]="รับไอเทมไม่สำเร็จ",["Description"]="ลองกดอีกครั้ง",["Time"]=3})
+    end
+end})
+
 local v143=v126.Movement:AddRightGroupbox("ความเร็วรถ")
 v143:AddToggle("VehicleSpeedEnabled",{["Text"]="เพิ่มความเร็วรถ",["Default"]=false,["Tooltip"]="ปรับความเร็ว VehicleSeat ของรถที่กำลังนั่ง",["Callback"]=function(vs)
     Settings.vehicleSpeedEnabled=vs
