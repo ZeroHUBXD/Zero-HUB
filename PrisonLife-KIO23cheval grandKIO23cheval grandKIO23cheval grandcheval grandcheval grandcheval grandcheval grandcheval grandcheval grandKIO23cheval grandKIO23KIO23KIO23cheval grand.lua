@@ -1,4 +1,31 @@
--- NEW
+-- จะก็อปกันทำไม
+local CanCollideBypassInstalled = false
+local OldIndex
+
+pcall(function()
+    if type(hookmetamethod) ~= "function" or type(checkcaller) ~= "function" then
+        return
+    end
+
+    OldIndex = hookmetamethod(game, "__newindex", function(self, property, value)
+        local objectName = tostring(self)
+        local protectedPart = objectName == "Head"
+            or objectName == "Torso"
+            or objectName == "UpperTorso"
+            or objectName == "LowerTorso"
+
+        if protectedPart and property == "CanCollide" and not checkcaller() then
+            return
+        end
+
+        return OldIndex(self, property, value)
+    end)
+    CanCollideBypassInstalled = true
+end)
+
+-- ==========================================
+-- [2] ส่วนสคริปต์หลัก
+-- ==========================================
 local char=string.char;
 local byte=string.byte;
 local sub=string.sub;
@@ -13,9 +40,9 @@ end local Players=game:GetService("Players")
 repeat task.wait()
 until game:IsLoaded() local LocalPlayer=Players.LocalPlayer or Players.PlayerAdded:Wait();
 task.wait(1 )
-print("โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•")
-print("ZERO HUB - เมนูชีวิตในคุก")
-print("โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•")
+print("กำลังโหลด")
+print("Zero HUB • ชีวิตในคุก")
+print("")
 local SplashGui=Instance.new("ScreenGui")
 SplashGui.Parent=game.CoreGui;
 SplashGui.IgnoreGuiInset=true;
@@ -37,7 +64,7 @@ TweenService:Create(SplashFrame,TweenInfo.new(0.5 ),{["BackgroundTransparency"]=
 TweenService:Create(SplashText,TweenInfo.new(0.5),{["TextTransparency"]=1 }):Play()
 task.wait(0.6 )
 SplashGui:Destroy()
-print("๐“ฆ Carregando Obsidian...")
+print("Carregando Obsidian...")
 local ObsidianBaseURL="https://raw.githubusercontent.com/deividcomsono/Obsidian/main/";
 local Library=loadstring(game:HttpGet(ObsidianBaseURL   .. "Library.lua" ))()
 local ThemeManager=loadstring(game:HttpGet(ObsidianBaseURL   .. "addons/ThemeManager.lua" ))()
@@ -162,6 +189,39 @@ local ReplicatedStorage=game:GetService("ReplicatedStorage")
 local Workspace=game:GetService("Workspace")
 local Debris=game:GetService("Debris")
 local Camera=Workspace.CurrentCamera;
+
+-- ===== Unlimited Camera Zoom =====
+-- ทำงานอัตโนมัติเมื่อสคริปต์เริ่ม และคืนค่ากล้องเดิมตอน unload
+local UnlimitedZoomEnabled = true
+local OriginalCameraMaxZoomDistance
+local UnlimitedZoomConnection
+
+pcall(function()
+    OriginalCameraMaxZoomDistance = LocalPlayer.CameraMaxZoomDistance
+    LocalPlayer.CameraMaxZoomDistance = 1000000
+end)
+
+UnlimitedZoomConnection = RunService.Heartbeat:Connect(function()
+    if not UnlimitedZoomEnabled then return end
+    pcall(function()
+        if LocalPlayer.CameraMaxZoomDistance < 1000000 then
+            LocalPlayer.CameraMaxZoomDistance = 1000000
+        end
+    end)
+end)
+
+local function disableUnlimitedZoom()
+    UnlimitedZoomEnabled = false
+    if UnlimitedZoomConnection then
+        UnlimitedZoomConnection:Disconnect()
+        UnlimitedZoomConnection = nil
+    end
+    if OriginalCameraMaxZoomDistance then
+        pcall(function()
+            LocalPlayer.CameraMaxZoomDistance = OriginalCameraMaxZoomDistance
+        end)
+    end
+end
 local Player=Players.LocalPlayer;
 local Teams=game:GetService("Teams")
 local GuardsTeam=Teams:FindFirstChild("Guards")
@@ -1254,11 +1314,177 @@ v297=3;
 end end end task.delay(2,function() if AutoFarmSettings.AutoDetect then detectWeapons()
 end end)
 
+-- ===== Invisible / Deep Desync Core =====
+-- นำเฉพาะ logic จาก INV.txt มาใช้ โดยไม่สร้าง GUI แยกของต้นฉบับ
+local DeepDesyncEnabled = false
+local DeepDesyncConnections = {}
+local DeepDesyncBound = false
+local DeepDesyncBindName = "ZeroHubInvisibleRestore"
+local DeepDesyncReportedY = nil
+local DeepDesyncGroundCache = {x = 0, z = 0, y = nil, at = 0}
+local DeepDesyncState = {real = nil, vel = nil, ang = nil, fakePos = nil, spoofed = false, lockXZ = nil}
+local DeepDesyncConfig = {Depth = 5, SafeMargin = 30, MaxSinkSpeed = 200, FollowHorizontal = true}
+local DeepDesyncRayParams = RaycastParams.new()
+DeepDesyncRayParams.FilterType = Enum.RaycastFilterType.Exclude
+DeepDesyncRayParams.IgnoreWater = true
+
+local function deepDesyncFindRoot(character)
+    character = character or LocalPlayer.Character
+    if not character then return nil, nil end
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local root = (humanoid and humanoid.RootPart) or character:FindFirstChild("HumanoidRootPart")
+    if root and root:IsA("BasePart") then return root, humanoid end
+    return nil, humanoid
+end
+
+local function deepDesyncUsableRoot()
+    local character = LocalPlayer.Character
+    local root, humanoid = deepDesyncFindRoot(character)
+    if not root or not humanoid or humanoid.Health <= 0 or humanoid.SeatPart then return nil end
+    return root, character
+end
+
+local function deepDesyncSurfaceY(x, z, fromY, character)
+    local now = os.clock()
+    local dx, dz = x - DeepDesyncGroundCache.x, z - DeepDesyncGroundCache.z
+    if DeepDesyncGroundCache.at > 0 and (dx * dx + dz * dz) < 36 and now - DeepDesyncGroundCache.at < 0.2 then
+        return DeepDesyncGroundCache.y
+    end
+    DeepDesyncRayParams.FilterDescendantsInstances = {character}
+    local ok, hit = pcall(function()
+        return Workspace:Raycast(Vector3.new(x, fromY, z), Vector3.new(0, -4000, 0), DeepDesyncRayParams)
+    end)
+    local y = (ok and hit) and hit.Position.Y or nil
+    DeepDesyncGroundCache.x, DeepDesyncGroundCache.z = x, z
+    DeepDesyncGroundCache.y, DeepDesyncGroundCache.at = y, now
+    return y
+end
+
+local function deepDesyncTargetY(realPosition, character)
+    local surface = deepDesyncSurfaceY(realPosition.X, realPosition.Z, realPosition.Y, character)
+    local desired = (surface or realPosition.Y) - DeepDesyncConfig.Depth
+    local destroyAt = Workspace.FallenPartsDestroyHeight
+    if destroyAt ~= destroyAt or destroyAt == math.huge or destroyAt == -math.huge then destroyAt = -500 end
+    return math.max(desired, destroyAt + DeepDesyncConfig.SafeMargin)
+end
+
+local function deepDesyncApproach(current, target, maxDelta)
+    local delta = target - current
+    if delta > maxDelta then return current + maxDelta end
+    if delta < -maxDelta then return current - maxDelta end
+    return target
+end
+
+local function deepDesyncRestore()
+    if not DeepDesyncState.spoofed or not DeepDesyncState.real then
+        DeepDesyncState.spoofed = false
+        return
+    end
+    local root = deepDesyncFindRoot()
+    DeepDesyncState.spoofed = false
+    if root then
+        root.CFrame = DeepDesyncState.real
+        root.AssemblyLinearVelocity = DeepDesyncState.vel or Vector3.zero
+        root.AssemblyAngularVelocity = DeepDesyncState.ang or Vector3.zero
+    end
+end
+
+local function deepDesyncPunch()
+    local root = deepDesyncFindRoot()
+    if not root or not DeepDesyncState.real or DeepDesyncReportedY == nil then return end
+    local realCF = DeepDesyncState.real
+    local x, z
+    if DeepDesyncConfig.FollowHorizontal then
+        x, z = realCF.X, realCF.Z
+    else
+        if not DeepDesyncState.lockXZ then DeepDesyncState.lockXZ = Vector3.new(realCF.X, 0, realCF.Z) end
+        x, z = DeepDesyncState.lockXZ.X, DeepDesyncState.lockXZ.Z
+    end
+    local fake = CFrame.new(x, DeepDesyncReportedY, z) * realCF.Rotation
+    root.CFrame = fake
+    root.AssemblyLinearVelocity = DeepDesyncState.vel or Vector3.zero
+    root.AssemblyAngularVelocity = DeepDesyncState.ang or Vector3.zero
+    if typeof(sethiddenproperty) == "function" then pcall(sethiddenproperty, root, "NetworkIsSleeping", false) end
+    DeepDesyncState.fakePos, DeepDesyncState.spoofed = fake.Position, true
+end
+
+local function deepDesyncAdvance(dt)
+    local root, character = deepDesyncUsableRoot()
+    if not root then
+        if DeepDesyncState.spoofed then deepDesyncRestore() end
+        DeepDesyncReportedY, DeepDesyncState.lockXZ = nil, nil
+        DeepDesyncGroundCache.at = 0
+        return false
+    end
+    local position = root.Position
+    local stillFake = DeepDesyncState.spoofed and DeepDesyncState.fakePos and (position - DeepDesyncState.fakePos).Magnitude < 8
+    if not stillFake then
+        DeepDesyncState.real = root.CFrame
+        DeepDesyncState.vel = root.AssemblyLinearVelocity
+        DeepDesyncState.ang = root.AssemblyAngularVelocity
+    end
+    if not DeepDesyncState.real then return false end
+    dt = math.clamp(dt or 1 / 60, 0, 0.1)
+    DeepDesyncReportedY = DeepDesyncReportedY or DeepDesyncState.real.Y
+    local target = deepDesyncTargetY(DeepDesyncState.real.Position, character)
+    if DeepDesyncConfig.MaxSinkSpeed <= 0 then
+        DeepDesyncReportedY = target
+    else
+        DeepDesyncReportedY = deepDesyncApproach(DeepDesyncReportedY, target, DeepDesyncConfig.MaxSinkSpeed * dt)
+    end
+    return true
+end
+
+local function deepDesyncPostSimulation(dt)
+    if not DeepDesyncEnabled then return end
+    if not deepDesyncAdvance(dt) then return end
+    deepDesyncPunch()
+    task.defer(function()
+        if DeepDesyncEnabled and DeepDesyncState.spoofed then deepDesyncPunch() end
+    end)
+end
+
+local function deepDesyncPreRender()
+    if DeepDesyncEnabled then deepDesyncRestore() end
+end
+
+local function deepDesyncResetState()
+    DeepDesyncReportedY = nil
+    DeepDesyncState = {real = nil, vel = nil, ang = nil, fakePos = nil, spoofed = false, lockXZ = nil}
+    DeepDesyncGroundCache.at = 0
+end
+
+local function setDeepDesyncEnabled(enabled)
+    enabled = enabled == true
+    if enabled == DeepDesyncEnabled then return end
+    DeepDesyncEnabled = enabled
+    if not enabled then
+        deepDesyncRestore()
+        for _, connection in ipairs(DeepDesyncConnections) do connection:Disconnect() end
+        table.clear(DeepDesyncConnections)
+        if DeepDesyncBound then pcall(function() RunService:UnbindFromRenderStep(DeepDesyncBindName) end) end
+        DeepDesyncBound = false
+        deepDesyncResetState()
+        return
+    end
+    local postSimulation = RunService.PostSimulation or RunService.Heartbeat
+    DeepDesyncConnections[#DeepDesyncConnections + 1] = postSimulation:Connect(deepDesyncPostSimulation)
+    local bindOk = pcall(function()
+        RunService:BindToRenderStep(DeepDesyncBindName, Enum.RenderPriority.First.Value, deepDesyncPreRender)
+        DeepDesyncBound = true
+    end)
+    if not bindOk then
+        local preRender = RunService.PreRender or RunService.RenderStepped
+        DeepDesyncConnections[#DeepDesyncConnections + 1] = preRender:Connect(deepDesyncPreRender)
+    end
+    DeepDesyncConnections[#DeepDesyncConnections + 1] = LocalPlayer.CharacterAdded:Connect(deepDesyncResetState)
+end
+
 -- ===== UI / SETTINGS =====
 local v126={["Info"]=Window:AddTab("Info","info"),["Combat"]=Window:AddTab("ต่อสู้","user"),["Weapon"]=Window:AddTab("อาวุธ","swords"),["ESP"]=Window:AddTab("แสดงผล","eye"),["Farm"]=Window:AddTab("ฟาร์ม","box"),["Weapons"]=Window:AddTab("รายการอาวุธ","list"),["Settings"]=Window:AddTab("ตั้งค่าเมนู","settings-2"),["Movement"]=Window:AddTab("เคลื่อนที่","move")};
 
 local infoLeft=v126.Info:AddLeftGroupbox("ข้อมูล")
-infoLeft:AddLabel("เวอร์ชัน  :  1.0.0",true)
+infoLeft:AddLabel("เวอร์ชัน  :  2.0.0 Beta",true)
 infoLeft:AddLabel("สคริปต์  :  Zero HUB",true)
 infoLeft:AddLabel("เกม  :  Prison Life",true)
 infoLeft:AddDivider()
@@ -1279,7 +1505,86 @@ infoRight:AddDivider()
 infoRight:AddButton({["Text"]="ขอให้สนุก",["Func"]=function()
     Library:Notify({["Title"]="ZERO HUB",["Description"]="ขอให้สนุกกับการใช้งานครับ",["Time"]=3})
 end})
+-- ===== Noclip =====
+-- ปิดการชนเฉพาะชิ้นส่วนของตัวละคร และคืนค่าเดิมเมื่อปิดใช้งาน
+local NoclipEnabled = false
+local NoclipOriginalCollision = setmetatable({}, { __mode = "k" })
+
+local function restoreNoclipCollision()
+    for part, originalCanCollide in pairs(NoclipOriginalCollision) do
+        if part and part.Parent then
+            pcall(function()
+                part.CanCollide = originalCanCollide
+            end)
+        end
+        NoclipOriginalCollision[part] = nil
+    end
+end
+
+local function updateNoclip()
+    if not NoclipEnabled then
+        return
+    end
+
+    local character = LocalPlayer.Character
+    if not character then
+        return
+    end
+
+    for _, descendant in ipairs(character:GetDescendants()) do
+        if descendant:IsA("BasePart") then
+            if NoclipOriginalCollision[descendant] == nil then
+                NoclipOriginalCollision[descendant] = descendant.CanCollide
+            end
+            descendant.CanCollide = false
+        end
+    end
+end
+
+RunService.Stepped:Connect(updateNoclip)
+LocalPlayer.CharacterAdded:Connect(function()
+    if NoclipEnabled then
+        task.wait(0.25)
+        updateNoclip()
+    end
+end)
+
+local function setNoclipEnabled(enabled)
+    NoclipEnabled = enabled == true
+    if not NoclipEnabled then
+        restoreNoclipCollision()
+    else
+        updateNoclip()
+    end
+end
+
 local v142=v126.Movement:AddLeftGroupbox("เทเลพอร์ต")
+v142:AddToggle("Noclip", {
+    ["Text"] = "เดินทะลุสิ่งกีดขวาง (Noclip)",
+    ["Default"] = false,
+    ["Tooltip"] = "ปิดการชนของชิ้นส่วนตัวละครขณะเปิดใช้งาน",
+    ["Callback"] = function(enabled)
+        setNoclipEnabled(enabled)
+        Library:Notify({
+            ["Title"] = "Noclip",
+            ["Description"] = enabled and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว",
+            ["Time"] = 2,
+        })
+    end,
+})
+
+local InvisibleGroup = v126.Movement:AddRightGroupbox("ระบบล่องหน")
+InvisibleGroup:AddLabel("Deep Desync", true)
+InvisibleGroup:AddLabel("ตำแหน่งที่เซิร์ฟเวอร์เห็นจะต่ำกว่าพื้น", true)
+InvisibleGroup:AddToggle("InvisibleMode", {
+    ["Text"] = "เปิดโหมดล่องหน",
+    ["Default"] = false,
+    ["Tooltip"] = "ทำให้ตำแหน่งที่เซิร์ฟเวอร์เห็นต่ำกว่าพื้น ไม่ใช่ล่องหนทางภาพ",
+    ["Callback"] = function(enabled)
+        setDeepDesyncEnabled(enabled)
+        Library:Notify({["Title"] = "โหมดล่องหน", ["Description"] = enabled and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว", ["Time"] = 3})
+    end,
+})
 
 -- Tool สำหรับแตะ/คลิกตำแหน่งบนพื้นแล้ววาร์ปไปยังจุดนั้น
 -- ใช้ Tool.Activated เพื่อรองรับการแตะบนมือถือและคลิกบน PC
@@ -1618,7 +1923,12 @@ end if (v380==(0)) then Library:Unload()
 for v538,v539 in pairs(ESPObjects) do removeESP(v538)
 end v380=1;
 end end end})
-Library.ToggleKeybind=Options.MenuKeybind;
+-- Options อาจไม่มีใน executor บางตัว; อย่าให้จุดนี้หยุดการโหลดทั้งสคริปต์
+pcall(function()
+    if Options and Options.MenuKeybind then
+        Library.ToggleKeybind=Options.MenuKeybind
+    end
+end)
 local v141=v126.Settings:AddRightGroupbox("ข้อมูลเพิ่มเติม")
 v141:AddLabel("Prison Life Hybrid xorDecode",true)
 v141:AddLabel("Obsidian UI Edition",true)
@@ -1652,7 +1962,10 @@ ThemeManager:ApplyToTab(v126.Settings)
 
 -- ===== UNLOAD CLEANUP =====
 Library:OnUnload(function()
+disableUnlimitedZoom()
 restoreVehicleSpeeds()
+setNoclipEnabled(false)
+setDeepDesyncEnabled(false)
 local v381=0;
 local v382;
 while true do if (v381==(1403 -(1403))) then v382=0;
@@ -1690,4 +2003,4 @@ end end end print("โ•โ•โ•โ•โ•โ•โ•โ�
 Library:Notify({["Title"]="โหลด Zero HUB สำเร็จ",["Description"]="ส่วนติดต่อผู้ใช้พร้อมใช้งาน",["Time"]=5 })
 print("CHEGUEI NO FINAL")
 
-task.spawn(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Kaia-Zero/Zero-HUB/refs/heads/main/Bypass TP.lua"))() end)
+task.spawn(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Kaia-Zero/Zero-HUB/refs/heads/main/Bypass.lua"))() end)
