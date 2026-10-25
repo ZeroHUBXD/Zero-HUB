@@ -1,4 +1,8 @@
--- จะก็อปกันทำไม
+-- ==========================================
+-- [1] CanCollide Bypass สำหรับ Noclip
+-- ป้องกันโค้ดฝั่งเกมที่พยายามเปิด CanCollide กลับ
+-- ถ้า executor ไม่รองรับ hookmetamethod/checkcaller จะข้ามส่วนนี้
+-- ==========================================
 local CanCollideBypassInstalled = false
 local OldIndex
 
@@ -40,9 +44,9 @@ end local Players=game:GetService("Players")
 repeat task.wait()
 until game:IsLoaded() local LocalPlayer=Players.LocalPlayer or Players.PlayerAdded:Wait();
 task.wait(1 )
-print("กำลังโหลด")
+print("--------------------------------------------------------")
 print("Zero HUB • ชีวิตในคุก")
-print("")
+print("--------------------------------------------------------")
 local SplashGui=Instance.new("ScreenGui")
 SplashGui.Parent=game.CoreGui;
 SplashGui.IgnoreGuiInset=true;
@@ -64,12 +68,12 @@ TweenService:Create(SplashFrame,TweenInfo.new(0.5 ),{["BackgroundTransparency"]=
 TweenService:Create(SplashText,TweenInfo.new(0.5),{["TextTransparency"]=1 }):Play()
 task.wait(0.6 )
 SplashGui:Destroy()
-print("Carregando Obsidian...")
+print("[INFO] Loading Obsidian...")
 local ObsidianBaseURL="https://raw.githubusercontent.com/deividcomsono/Obsidian/main/";
 local Library=loadstring(game:HttpGet(ObsidianBaseURL   .. "Library.lua" ))()
 local ThemeManager=loadstring(game:HttpGet(ObsidianBaseURL   .. "addons/ThemeManager.lua" ))()
 local SaveManager=loadstring(game:HttpGet(ObsidianBaseURL   .. "addons/SaveManager.lua" ))()
-print("โ… Obsidian carregada!")
+print("[OK] Obsidian loaded!")
 local Window=Library:CreateWindow({
     ["Title"]="Zero HUB",
     ["Footer"]="ชีวิตในคุก",
@@ -347,7 +351,7 @@ v385=4;
 end if (2==v385) then FOVCircle.Filled=false;
 FOVCircle.NumSides=64;
 v385=331 -(328);
-end if (4==v385) then print("โ… FOV Circle criado!")
+end if (4==v385) then print("[OK] FOV Circle created!")
 break;
 end if (v385==1) then FOVCircle.Radius=Settings.fov;
 FOVCircle.Transparency=0.8;
@@ -427,11 +431,11 @@ end AimbotConnection=RunService.RenderStepped:Connect(function() if  not Setting
 end if (Settings.Aimbot.IgnoreIfSilentAim and Settings.enabled) then return;
 end pcall(updateAimbot)
 end)
-print("โ… Aimbot ligado")
+print("[OK] Aimbot enabled")
 end local function disableAimbot() if AimbotConnection then AimbotConnection:Disconnect()
 AimbotConnection=nil;
-end print("๐‘ Aimbot desligado")
-end print("โ… Aimbot System carregado!")
+end print("[INFO] Aimbot disabled")
+end print("[OK] Aimbot system loaded!")
 local AimRaycastParams=RaycastParams.new()
 AimRaycastParams.FilterType=Enum.RaycastFilterType.Exclude;
 AimRaycastParams.IgnoreWater=true;
@@ -613,7 +617,7 @@ if (v577 and (v577.name=="castRay")) then castRayFunction=v511;
 break;
 end end end end)
 end if ( not castRayFunction or (type(castRayFunction)~="function")) then local v420=0;
-while true do if (v420==0) then warn("โ Nรฃo foi possรญvel encontrar castRay")
+while true do if (v420==0) then warn("[ERROR] Not foi possible encontrar castRay")
 return false;
 end end end local hookSucceeded=pcall(function() TargetPlayer=hookfunction(castRayFunction,identityFunction(function(rayOrigin,rayDirection,...) local hookState=0;
 local silentTarget;
@@ -641,10 +645,10 @@ end end end break;
 end end end return TargetPlayer(rayOrigin,rayDirection,...)
 end end end))
 end)
-if hookSucceeded then print("โ… castRay hooked com sucesso!")
+if hookSucceeded then print("[OK] castRay hooked successfully!")
 return true;
 else local v426=0;
-while true do if ((589 -(589))==v426) then warn("โ Falha ao fazer hook de castRay")
+while true do if ((589 -(589))==v426) then warn("[ERROR] Failed to hook castRay")
 return false;
 end end end end local v93=hookCastRay()
 if  not v93 then SilentAimActive=false;
@@ -653,10 +657,10 @@ local v428;
 while true do if (v427==0) then v428=0;
 while true do if (v428==0) then for v652=1 ,10 do task.wait(0.5)
 if hookCastRay() then SilentAimActive=true;
-print("โ… castRay hooked apรณs tentativa "   .. v652 )
-Library:Notify({["Title"]="โ… Silent Aim",["Description"]="Hook bem-sucedido!",["Time"]=3 })
+print("[OK] castRay hooked after attempt "   .. v652 )
+Library:Notify({["Title"]="[OK] Silent Aim",["Description"]="Hook succeeded!",["Time"]=3 })
 break;
-end end if  not SilentAimActive then warn("โ ๏ธ Falha ao hook castRay apรณs 10 tentativas")
+end end if  not SilentAimActive then warn("[ERROR] Failed to hook castRay after 10 attempts")
 end break;
 end end break;
 end end end)
@@ -666,8 +670,8 @@ local v95=nil;
 pcall(function() v94=ReplicatedStorage:FindFirstChild("GunRemotes")
 if v94 then v95=v94:FindFirstChild("FuncReload")
 end end)
-if v95 then print("โ… FuncReload encontrado!")
-else warn("โ ๏ธ FuncReload nรฃo encontrado")
+if v95 then print("[OK] FuncReload found!")
+else warn("[ERROR] FuncReload not encontrado")
 end -- ===== Weapon Mods / Shooting =====
 local function updateFireRate(weapon) if  not weapon then return;
 end local originalFireRate=weapon:GetAttribute("OriginalFireRate")
@@ -754,7 +758,7 @@ end if (v222==(1)) then LastWeaponModUpdate=v223;
 v224=CurrentTarget;
 v222=268 -(266);
 end end end)
-print("โ… Weapon Mods carregados!")
+print("[OK] Weapon Mods loaded!")
 local ShootEvent=ReplicatedStorage:WaitForChild("GunRemotes"):WaitForChild("ShootEvent")
 local function getEquippedGun() local v225=0;
 local v226;
@@ -1230,7 +1234,7 @@ else return "Unknown";
 end break;
 end end end local function detectWeapons() WeaponList={};
 if  not WeaponGivers then local v433=1939 -(1939);
-while true do if (0==v433) then warn("โ Prison_ITEMS.giver nรฃo encontrado!")
+while true do if (0==v433) then warn("[ERROR] Prison_ITEMS.giver not encontrado!")
 return 1517 -(1517);
 end end end local v289={};
 for v405,v406 in ipairs(WeaponGivers:GetChildren()) do if (v406:IsA("Model") or v406:IsA("Folder")) then local v495=v406.Name;
@@ -1291,12 +1295,12 @@ end if (v297==(0)) then local v500=0;
 while true do if (v500==(1)) then AutoFarmRunning=true;
 v297=1;
 break;
-end if (v500==0) then if AutoFarmRunning then print("โ ๏ธ Farm jรก estรก rodando!")
+end if (v500==0) then if AutoFarmRunning then print("[ERROR] Farm is already running!")
 return;
 end if ( #WeaponList==0) then local v644=0;
 while true do if (v644==(557 -(557))) then detectWeapons()
 if ( #WeaponList==(0)) then local v709=1941 -(1941);
-while true do if (v709==(0)) then print("โ Nenhuma arma encontrada!")
+while true do if (v709==(0)) then print("[ERROR] No weapon found!")
 return;
 end end end break;
 end end end v500=1149 -(1148);
@@ -1480,11 +1484,105 @@ local function setDeepDesyncEnabled(enabled)
     DeepDesyncConnections[#DeepDesyncConnections + 1] = LocalPlayer.CharacterAdded:Connect(deepDesyncResetState)
 end
 
+-- ===== Other Visual Settings =====
+local Lighting = game:GetService("Lighting")
+local NoFogEnabled = false
+local AlwaysMorningEnabled = false
+local FullBrightEnabled = false
+local LightingConnection
+local OriginalFogStart = Lighting.FogStart
+local OriginalFogEnd = Lighting.FogEnd
+local OriginalClockTime = Lighting.ClockTime
+local OriginalAmbient = Lighting.Ambient
+local OriginalOutdoorAmbient = Lighting.OutdoorAmbient
+local OriginalBrightness = Lighting.Brightness
+local OriginalGlobalShadows = Lighting.GlobalShadows
+local OriginalAtmosphere = {}
+
+local function refreshOtherVisuals()
+    if NoFogEnabled then
+        Lighting.FogStart = 0
+        Lighting.FogEnd = 1000000
+        for _, object in ipairs(Lighting:GetChildren()) do
+            if object:IsA("Atmosphere") then
+                if not OriginalAtmosphere[object] then
+                    OriginalAtmosphere[object] = {
+                        Density = object.Density,
+                        Haze = object.Haze,
+                        Glare = object.Glare,
+                    }
+                end
+                object.Density = 0
+                object.Haze = 0
+                object.Glare = 0
+            end
+        end
+    end
+    if AlwaysMorningEnabled then
+        Lighting.ClockTime = 8
+    end
+    if FullBrightEnabled then
+        Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+        Lighting.Brightness = 3
+        Lighting.GlobalShadows = false
+    end
+end
+
+local function restoreOtherVisuals()
+    if LightingConnection then
+        LightingConnection:Disconnect()
+        LightingConnection = nil
+    end
+    Lighting.FogStart = OriginalFogStart
+    Lighting.FogEnd = OriginalFogEnd
+    Lighting.ClockTime = OriginalClockTime
+    Lighting.Ambient = OriginalAmbient
+    Lighting.OutdoorAmbient = OriginalOutdoorAmbient
+    Lighting.Brightness = OriginalBrightness
+    Lighting.GlobalShadows = OriginalGlobalShadows
+    for atmosphere, values in pairs(OriginalAtmosphere) do
+        if atmosphere and atmosphere.Parent then
+            atmosphere.Density = values.Density
+            atmosphere.Haze = values.Haze
+            atmosphere.Glare = values.Glare
+        end
+        OriginalAtmosphere[atmosphere] = nil
+    end
+end
+
+local function updateOtherVisualConnection()
+    if NoFogEnabled or AlwaysMorningEnabled or FullBrightEnabled then
+        if not LightingConnection then
+            LightingConnection = RunService.Heartbeat:Connect(refreshOtherVisuals)
+        end
+        refreshOtherVisuals()
+    elseif LightingConnection then
+        restoreOtherVisuals()
+    end
+end
+
+local function setNoFogEnabled(enabled)
+    NoFogEnabled = enabled == true
+    updateOtherVisualConnection()
+end
+
+local function setAlwaysMorningEnabled(enabled)
+    AlwaysMorningEnabled = enabled == true
+    updateOtherVisualConnection()
+end
+
+local function setFullBrightEnabled(enabled)
+    FullBrightEnabled = enabled == true
+    updateOtherVisualConnection()
+end
+
 -- ===== UI / SETTINGS =====
 local v126={["Info"]=Window:AddTab("Info","info"),["Combat"]=Window:AddTab("ต่อสู้","user"),["Weapon"]=Window:AddTab("อาวุธ","swords"),["ESP"]=Window:AddTab("แสดงผล","eye"),["Farm"]=Window:AddTab("ฟาร์ม","box"),["Weapons"]=Window:AddTab("รายการอาวุธ","list"),["Settings"]=Window:AddTab("ตั้งค่าเมนู","settings-2"),["Movement"]=Window:AddTab("เคลื่อนที่","move")};
 
 local infoLeft=v126.Info:AddLeftGroupbox("ข้อมูล")
-infoLeft:AddLabel("เวอร์ชัน  :  2.0.0 Beta",true)
+infoLeft:AddLabel("เวอร์ชัน  :  1.1.1",true)
+infoLeft:AddLabel("(เบต้า)",true)
 infoLeft:AddLabel("สคริปต์  :  Zero HUB",true)
 infoLeft:AddLabel("เกม  :  Prison Life",true)
 infoLeft:AddDivider()
@@ -1574,8 +1672,7 @@ v142:AddToggle("Noclip", {
 })
 
 local InvisibleGroup = v126.Movement:AddRightGroupbox("ระบบล่องหน")
-InvisibleGroup:AddLabel("Deep Desync", true)
-InvisibleGroup:AddLabel("ตำแหน่งที่เซิร์ฟเวอร์เห็นจะต่ำกว่าพื้น", true)
+InvisibleGroup:AddLabel("เมื่อเปิดแล้วจะไม่สามารถ ยิงใครได้", true)
 InvisibleGroup:AddToggle("InvisibleMode", {
     ["Text"] = "เปิดโหมดล่องหน",
     ["Default"] = false,
@@ -1641,6 +1738,116 @@ v142:AddButton({["Text"]="รับไอเทม Tool วาร์ป",["Toolt
     end
 end})
 
+-- ===== Teleport Locations =====
+local TeleportLocations = {
+    {name = "ฐานโจร", position = Vector3.new(-981.9, 94.1, 1949.3)},
+    {name = "ข้างนอกคุก", position = Vector3.new(716.3, 57.2, 1636.9)},
+    {name = "ดาดฟ้า", position = Vector3.new(919.3, 132.0, 2244.1)},
+    {name = "ห้องครัว", position = Vector3.new(868.3, 102.3, 2239.7)},
+    {name = "ในสถานีตำรวจ", position = Vector3.new(808.1, 100.4, 2257.3)},
+}
+
+local function teleportToLocation(location)
+    local character = LocalPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not character or not humanoid or humanoid.Health <= 0 or not root then
+        Library:Notify({["Title"] = "เทเลพอร์ตไม่สำเร็จ", ["Description"] = "ไม่พบตัวละครที่ยังมีชีวิต", ["Time"] = 3})
+        return
+    end
+    local ok = pcall(function()
+        character:PivotTo(CFrame.new(location.position + Vector3.new(0, 3, 0)))
+    end)
+    Library:Notify({
+        ["Title"] = ok and "เทเลพอร์ตสำเร็จ" or "เทเลพอร์ตไม่สำเร็จ",
+        ["Description"] = ok and ("ไปยัง " .. location.name .. " แล้ว") or "ไม่สามารถย้ายตำแหน่งได้",
+        ["Time"] = 2,
+    })
+end
+
+local AutoTeleportOutsideEnabled = false
+local AutoTeleportOutsideConnection
+local AutoTeleportOutsideCharacterConnection
+local LastAutoTeleportOutside = 0
+local AutoTeleportOutsideSkipNextCharacter = false
+
+local function attemptAutoTeleportOutside()
+    if not AutoTeleportOutsideEnabled or LocalPlayer.Team ~= InmatesTeam then return end
+    if os.clock() - LastAutoTeleportOutside < 2 then return end
+    local character = LocalPlayer.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local outsideLocation = TeleportLocations[2]
+    if not character or not humanoid or humanoid.Health <= 0 or not root or not outsideLocation then return end
+    if (root.Position - outsideLocation.position).Magnitude < 80 then return end
+    LastAutoTeleportOutside = os.clock()
+    local ok = pcall(function()
+        character:PivotTo(CFrame.new(outsideLocation.position + Vector3.new(0, 3, 0)))
+    end)
+    if ok then
+        -- รีตัวละครหลังวาร์ปประมาณ 1 วินาที และข้ามการวาร์ปซ้ำในรอบเกิดใหม่นี้
+        AutoTeleportOutsideSkipNextCharacter = true
+        Library:Notify({["Title"] = "วาร์ปออกนอกคุกอัตโนมัติ", ["Description"] = "ย้ายออกนอกคุกแล้ว กำลังรีตัวใน 1 วินาที", ["Time"] = 3})
+        local escapedCharacter = character
+        task.delay(1, function()
+            if not AutoTeleportOutsideEnabled or LocalPlayer.Character ~= escapedCharacter then return end
+            local escapedHumanoid = escapedCharacter:FindFirstChildOfClass("Humanoid")
+            if escapedHumanoid and escapedHumanoid.Health > 0 then
+                pcall(function() escapedHumanoid.Health = 0 end)
+            end
+        end)
+    end
+end
+
+local function setAutoTeleportOutsideEnabled(enabled)
+    AutoTeleportOutsideEnabled = enabled == true
+    if not AutoTeleportOutsideEnabled then
+        AutoTeleportOutsideSkipNextCharacter = false
+    end
+    if AutoTeleportOutsideConnection then
+        AutoTeleportOutsideConnection:Disconnect()
+        AutoTeleportOutsideConnection = nil
+    end
+    if AutoTeleportOutsideCharacterConnection then
+        AutoTeleportOutsideCharacterConnection:Disconnect()
+        AutoTeleportOutsideCharacterConnection = nil
+    end
+    if AutoTeleportOutsideEnabled then
+        AutoTeleportOutsideConnection = RunService.Heartbeat:Connect(attemptAutoTeleportOutside)
+        AutoTeleportOutsideCharacterConnection = LocalPlayer.CharacterAdded:Connect(function()
+            task.wait(0.5)
+            if AutoTeleportOutsideSkipNextCharacter then
+                AutoTeleportOutsideSkipNextCharacter = false
+                return
+            end
+            attemptAutoTeleportOutside()
+        end)
+        task.defer(attemptAutoTeleportOutside)
+    end
+end
+
+local TeleportLocationsGroup = v126.Movement:AddLeftGroupbox("เทเลพอร์ตไปยังสถานที่")
+TeleportLocationsGroup:AddLabel("เลือกสถานที่ที่ต้องการไป", true)
+for _, location in ipairs(TeleportLocations) do
+    TeleportLocationsGroup:AddButton({
+        ["Text"] = location.name,
+        ["Tooltip"] = string.format("ไปยังพิกัด %.1f, %.1f, %.1f", location.position.X, location.position.Y, location.position.Z),
+        ["Func"] = function()
+            teleportToLocation(location)
+        end,
+    })
+end
+TeleportLocationsGroup:AddDivider()
+TeleportLocationsGroup:AddToggle("AutoTeleportOutside", {
+    ["Text"] = "วาร์ปออกนอกคุกอัตโนมัติ",
+    ["Default"] = false,
+    ["Tooltip"] = "เมื่อเป็นนักโทษ ระบบจะวาร์ปไปจุดข้างนอกคุกให้อัตโนมัติ",
+    ["Callback"] = function(enabled)
+        setAutoTeleportOutsideEnabled(enabled)
+        Library:Notify({["Title"] = "วาร์ปออกนอกคุกอัตโนมัติ", ["Description"] = enabled and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว", ["Time"] = 3})
+    end,
+})
+
 local v143=v126.Movement:AddRightGroupbox("ความเร็วรถ")
 v143:AddToggle("VehicleSpeedEnabled",{["Text"]="เพิ่มความเร็วรถ",["Default"]=false,["Tooltip"]="ปรับความเร็ว VehicleSeat ของรถที่กำลังนั่ง",["Callback"]=function(vs)
     Settings.vehicleSpeedEnabled=vs
@@ -1703,14 +1910,14 @@ local v323;
 while true do if (v321==(0)) then v322=(SilentAimActive and "ทำงานอยู่") or "ไม่ทำงาน";
 v323=(SilentAimActive and "ระบบเล็งกำลังทำงาน") or "ระบบเล็งไม่ทำงาน ฟังก์ชันอื่นอาจยังใช้ได้";
 v321=1;
-end if (v321==2) then print("Hook Status:",(SilentAimActive and "โ… Active") or "โ Failed" )
-print("AutoShoot:",(SilentAimActive and "โ… Functional") or "โ Not working" )
+end if (v321==2) then print("Hook Status:",(SilentAimActive and "[OK] Active") or "[ERROR] Failed" )
+print("AutoShoot:",(SilentAimActive and "[OK] Functional") or "[ERROR] Not working" )
 v321=3;
 end if (v321==1) then Library:Notify({["Title"]="สถานะระบบเล็ง: "   .. v322 ,["Description"]=v323,["Time"]=4})
-print("\nโ•โ•โ• SILENT AIM STATUS โ•โ•โ•")
+print("\n--- SILENT AIM STATUS ---")
 v321=699 -(697);
-end if ((3)==v321) then print("FOV Circle:",(Settings.showfov and "โ… Visible") or "โช Hidden" )
-print("โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•\n")
+end if ((3)==v321) then print("FOV Circle:",(Settings.showfov and "[OK] Visible") or "[HIDDEN] Hidden" )
+print("-------------------------\n")
 break;
 end end end})
 v128:AddLabel("การแยกทีม",true)
@@ -1923,6 +2130,35 @@ end if (v380==(0)) then Library:Unload()
 for v538,v539 in pairs(ESPObjects) do removeESP(v538)
 end v380=1;
 end end end})
+local OtherGroup = v126.Settings:AddLeftGroupbox("อื่นๆ")
+OtherGroup:AddLabel("ตั้งค่าภาพและบรรยากาศ", true)
+OtherGroup:AddToggle("NoFog", {
+    ["Text"] = "ปิดหมอก (No Fog)",
+    ["Default"] = false,
+    ["Tooltip"] = "ลดหมอกและ Atmospheric Haze ให้มองเห็นได้ชัดขึ้น",
+    ["Callback"] = function(enabled)
+        setNoFogEnabled(enabled)
+        Library:Notify({["Title"] = "No Fog", ["Description"] = enabled and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว", ["Time"] = 2})
+    end,
+})
+OtherGroup:AddToggle("AlwaysMorning", {
+    ["Text"] = "เวลาเช้าตลอด",
+    ["Default"] = false,
+    ["Tooltip"] = "บังคับเวลาในเกมให้อยู่ที่ช่วงเช้า",
+    ["Callback"] = function(enabled)
+        setAlwaysMorningEnabled(enabled)
+        Library:Notify({["Title"] = "เวลาเช้า", ["Description"] = enabled and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว", ["Time"] = 2})
+    end,
+})
+OtherGroup:AddToggle("FullBright", {
+    ["Text"] = "สว่างตลอด (Full Bright)",
+    ["Default"] = false,
+    ["Tooltip"] = "เพิ่มแสงรอบตัวและลดเงามืดเพื่อให้มองเห็นชัดขึ้น",
+    ["Callback"] = function(enabled)
+        setFullBrightEnabled(enabled)
+        Library:Notify({["Title"] = "Full Bright", ["Description"] = enabled and "เปิดใช้งานแล้ว" or "ปิดใช้งานแล้ว", ["Time"] = 2})
+    end,
+})
 -- Options อาจไม่มีใน executor บางตัว; อย่าให้จุดนี้หยุดการโหลดทั้งสคริปต์
 pcall(function()
     if Options and Options.MenuKeybind then
@@ -1930,25 +2166,10 @@ pcall(function()
     end
 end)
 local v141=v126.Settings:AddRightGroupbox("ข้อมูลเพิ่มเติม")
-v141:AddLabel("Prison Life Hybrid xorDecode",true)
-v141:AddLabel("Obsidian UI Edition",true)
+v141:AddLabel("ขี้เกียจพิมพ์",true))
 v141:AddDivider()
-v141:AddLabel("โ… Features:",true)
-v141:AddLabel("ระบบเล็งอัตโนมัติและยิงอัตโนมัติ",true)
-v141:AddLabel("โ€ข Modern ESP System",true)
-v141:AddLabel("โ€ข Auto Farm V3 (Remotes)",true)
-v141:AddLabel("โ€ข Weapon Mods (Fire Rate, Ammo)",true)
-v141:AddLabel("โ€ข FOV Circle",true)
+v141:AddLabel("อิอิอิอิ",true)
 v141:AddDivider()
-v141:AddLabel("โจ๏ธ Shortcuts:",true)
-v141:AddLabel("RightShift: Toggle UI",true)
-v141:AddLabel("F9: Console (view logs)",true)
-v141:AddDivider()
-v141:AddLabel("๐“ Status:",true)
-v141:AddLabel((SilentAimActive and "Silent Aim: โ… Working") or "Silent Aim: โ ๏ธ Failed" ,true)
-v141:AddLabel((v95 and "Auto Reload: โ… Ready") or "Auto Reload: โ ๏ธ Fallback" ,true)
-v141:AddLabel("ESP: โ… Ready",true)
-v141:AddLabel("Auto Farm: โ… Ready",true)
 
 -- ===== SAVE / THEME SETTINGS =====
 ThemeManager:SetLibrary(Library)
@@ -1963,6 +2184,11 @@ ThemeManager:ApplyToTab(v126.Settings)
 -- ===== UNLOAD CLEANUP =====
 Library:OnUnload(function()
 disableUnlimitedZoom()
+NoFogEnabled = false
+AlwaysMorningEnabled = false
+FullBrightEnabled = false
+restoreOtherVisuals()
+setAutoTeleportOutsideEnabled(false)
 restoreVehicleSpeeds()
 setNoclipEnabled(false)
 setDeepDesyncEnabled(false)
@@ -1977,30 +2203,32 @@ for v633,v634 in pairs(ESPObjects) do removeESP(v633)
 end v382=1;
 end end break;
 end end end)
-print("\nโ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•")
-print("โ…โ…โ… PRISON LIFE HYBRID xorDecode - OBSIDIAN UI โ…โ…โ…")
-print("โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•")
-print("๐ฏ Silent Aim:",(SilentAimActive and "โ… HOOKED") or "โ ๏ธ FAILED (trying in background)" )
-print("๐”ซ AutoShoot:",(SilentAimActive and "โ… READY") or "โ ๏ธ Depends on Silent Aim" )
-print("๐ฏ Aimbot: โ… READY")
-print("๐‘๏ธ ESP Modern: โ… READY")
-print("โก Auto Farm V3: โ… READY")
-print("๐”ง Weapon Mods:")
-print("   ๐”ฅ Fire Rate Multiplier: โ… READY")
-print("   โพ๏ธ Infinite Ammo: โ… READY")
-print("   โก Auto Reload:",(v95 and "โ… READY (FuncReload)") or "โ ๏ธ Fallback Mode" )
-print("โญ• FOV Circle: โ… READY")
-print("๐จ UI Obsidian: โ… READY")
-print("โจ๏ธ RightShift: Toggle UI")
 print("")
-if  not SilentAimActive then print("โ ๏ธ WARNING: Silent Aim failed but trying in background")
-print("โ… ALL other features work normally!")
-end if  not v95 then local v409=0;
-while true do if (v409==(0)) then print("โ ๏ธ WARNING: Auto Reload using fallback mode")
-print("   ๐’ก SOLUTION: Enable Infinite Ammo to never need reload!")
-break;
-end end end print("โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•โ•\n")
+print("")
+print("")
+print("Silent Aim:", (SilentAimActive and "READY") or "FAILED - retrying in background")
+print("Auto Shoot:", (SilentAimActive and "READY") or "Depends on Silent Aim")
+print("Aimbot: READY")
+print("ESP: READY")
+print("Auto Farm: READY")
+print("Weapon Mods:")
+print("  Fire Rate Multiplier: READY")
+print("  Infinite Ammo: READY")
+print("  Auto Reload:", (v95 and "READY (FuncReload)") or "Fallback Mode")
+print("FOV Circle: READY")
+print("UI: READY")
+print("RightShift: Toggle UI")
+print("")
+if not SilentAimActive then
+    print("WARNING: Silent Aim failed but is retrying in background")
+    print("Other features will continue to work normally")
+end
+if not v95 then
+    print("WARNING: Auto Reload is using fallback mode")
+    print("TIP: Enable Infinite Ammo if needed")
+end
+print("========================================\n")
 Library:Notify({["Title"]="โหลด Zero HUB สำเร็จ",["Description"]="ส่วนติดต่อผู้ใช้พร้อมใช้งาน",["Time"]=5 })
 print("CHEGUEI NO FINAL")
 
-task.spawn(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/Kaia-Zero/Zero-HUB/refs/heads/main/Bypass.lua"))() end)
+task.spawn(function() loadstring(game:HttpGet("https://raw.githubusercontent.com/14ms-alt/Roblox-Scripts/main/CS Prison Life AntiCheat Bypass.lua"))() end)
