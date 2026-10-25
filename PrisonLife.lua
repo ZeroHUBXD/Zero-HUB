@@ -45,7 +45,7 @@ repeat task.wait()
 until game:IsLoaded() local LocalPlayer=Players.LocalPlayer or Players.PlayerAdded:Wait();
 task.wait(1 )
 print("--------------------------------------------------------")
-print("Zero HUB • ชีวิตในคุก")
+print("ZERO HUB - เมนูชีวิตในคุก")
 print("--------------------------------------------------------")
 local SplashGui=Instance.new("ScreenGui")
 SplashGui.Parent=game.CoreGui;
@@ -1581,8 +1581,7 @@ end
 local v126={["Info"]=Window:AddTab("Info","info"),["Combat"]=Window:AddTab("ต่อสู้","user"),["Weapon"]=Window:AddTab("อาวุธ","swords"),["ESP"]=Window:AddTab("แสดงผล","eye"),["Farm"]=Window:AddTab("ฟาร์ม","box"),["Weapons"]=Window:AddTab("รายการอาวุธ","list"),["Settings"]=Window:AddTab("ตั้งค่าเมนู","settings-2"),["Movement"]=Window:AddTab("เคลื่อนที่","move")};
 
 local infoLeft=v126.Info:AddLeftGroupbox("ข้อมูล")
-infoLeft:AddLabel("เวอร์ชัน  :  1.1.1",true)
-infoLeft:AddLabel("(เบต้า)",true)
+infoLeft:AddLabel("เวอร์ชัน  :  1.1.1 Beta",true)
 infoLeft:AddLabel("สคริปต์  :  Zero HUB",true)
 infoLeft:AddLabel("เกม  :  Prison Life",true)
 infoLeft:AddDivider()
@@ -1672,7 +1671,7 @@ v142:AddToggle("Noclip", {
 })
 
 local InvisibleGroup = v126.Movement:AddRightGroupbox("ระบบล่องหน")
-InvisibleGroup:AddLabel("เมื่อเปิดแล้วจะไม่สามารถ ยิงใครได้", true)
+InvisibleGroup:AddLabel("เปิดแล้วจะไม่สามารถ ยิงใครได้", true)
 InvisibleGroup:AddToggle("InvisibleMode", {
     ["Text"] = "เปิดโหมดล่องหน",
     ["Default"] = false,
@@ -2166,10 +2165,25 @@ pcall(function()
     end
 end)
 local v141=v126.Settings:AddRightGroupbox("ข้อมูลเพิ่มเติม")
-v141:AddLabel("ขี้เกียจพิมพ์",true))
+v141:AddLabel("Prison Life Hybrid xorDecode",true)
+v141:AddLabel("Obsidian UI Edition",true)
 v141:AddDivider()
-v141:AddLabel("อิอิอิอิ",true)
+v141:AddLabel("[OK] Features:",true)
+v141:AddLabel("ระบบเล็งอัตโนมัติและยิงอัตโนมัติ",true)
+v141:AddLabel("- Modern ESP System",true)
+v141:AddLabel("- Auto Farm V3 (Remotes)",true)
+v141:AddLabel("- Weapon Mods (Fire Rate, Ammo)",true)
+v141:AddLabel("- FOV Circle",true)
 v141:AddDivider()
+v141:AddLabel("Shortcuts: Shortcuts:",true)
+v141:AddLabel("RightShift: Toggle UI",true)
+v141:AddLabel("F9: Console (view logs)",true)
+v141:AddDivider()
+v141:AddLabel("[STATUS] Status:",true)
+v141:AddLabel((SilentAimActive and "Silent Aim: [OK] Working") or "Silent Aim: [ERROR] Failed" ,true)
+v141:AddLabel((v95 and "Auto Reload: [OK] Ready") or "Auto Reload: [ERROR] Fallback" ,true)
+v141:AddLabel("ESP: [OK] Ready",true)
+v141:AddLabel("Auto Farm: [OK] Ready",true)
 
 -- ===== SAVE / THEME SETTINGS =====
 ThemeManager:SetLibrary(Library)
@@ -2203,9 +2217,9 @@ for v633,v634 in pairs(ESPObjects) do removeESP(v633)
 end v382=1;
 end end break;
 end end end)
-print("")
-print("")
-print("")
+print("\n========================================")
+print("PRISON LIFE HYBRID - OBSIDIAN UI")
+print("========================================")
 print("Silent Aim:", (SilentAimActive and "READY") or "FAILED - retrying in background")
 print("Auto Shoot:", (SilentAimActive and "READY") or "Depends on Silent Aim")
 print("Aimbot: READY")
