@@ -3,13 +3,13 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 
 local INVITE_URL = "https://discord.gg/XtWGvQfxaW"
-local INVITE_TEXT = "discord.gg/CJK4bs2mgT"
+local INVITE_TEXT = "discord.gg/XtWGvQfxaW"
 local LOGO_IMAGE = "rbxassetid://128961717706452"
-local TITLE_TEXT = "Chilli Hub"
+local TITLE_TEXT = "VOID"
 local SUBTITLE_TEXT = "Join the official Discord server"
 local BODY_TEXT = "New scripts, patch notes and giveaways land there first."
-local FOOTER_TEXT = "Official Chilli Hub Community"
-local MEMBERS_COUNT = "140K+"
+local FOOTER_TEXT = "Official VOID HUB Community"
+local MEMBERS_COUNT = ""
 local MEMBERS_LABEL = "Members"
 local DESIGN_WIDTH, DESIGN_HEIGHT = 440, 272
 local LOCK_KEY = "\0chilli_discord_popup"
@@ -31,7 +31,7 @@ local COLORS = {
     White = Color3.new(1, 1, 1),
 }
 
-local SAVE_FOLDER = "Chilli Hub"
+local SAVE_FOLDER = "VOID HUB Z"
 local SAVE_FILE = SAVE_FOLDER .. "/DiscordPopup.json"
 
 local environment = (typeof(getgenv) == "function" and getgenv()) or _G
